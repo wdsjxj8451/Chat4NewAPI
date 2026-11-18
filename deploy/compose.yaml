@@ -1,0 +1,59 @@
+services:
+  chat:
+    image: ${CHAT_IMAGE:?Set CHAT_IMAGE}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3100
+      APP_DATA_DIR: /app/data
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?Set APP_ENCRYPTION_KEY}
+      SETUP_TOKEN: ${SETUP_TOKEN:?Set SETUP_TOKEN}
+    volumes:
+      - ./data/chat:/app/data
+    depends_on:
+      - new-api
+    networks:
+      - app
+
+  new-api:
+    image: calciumion/new-api:latest
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      SESSION_SECRET: ${NEWAPI_SESSION_SECRET:?Set NEWAPI_SESSION_SECRET}
+      CRYPTO_SECRET: ${NEWAPI_CRYPTO_SECRET:?Set NEWAPI_CRYPTO_SECRET}
+      SESSION_COOKIE_SECURE: "true"
+      SESSION_COOKIE_TRUSTED_URL: https://${NEWAPI_DOMAIN:?Set NEWAPI_DOMAIN}
+      TRUSTED_PROXIES: 172.16.0.0/12,192.168.0.0/16
+    volumes:
+      - ./data/newapi:/data
+    networks:
+      - app
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      CHAT_DOMAIN: ${CHAT_DOMAIN:?Set CHAT_DOMAIN}
+      NEWAPI_DOMAIN: ${NEWAPI_DOMAIN:?Set NEWAPI_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - chat
+      - new-api
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
