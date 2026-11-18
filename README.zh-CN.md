@@ -126,7 +126,7 @@ docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.w
 docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml up -d chat new-api
 ```
 
-聊天站地址为 `http://localhost:8090`，New API 管理台地址为 `http://localhost:3001`。WSL 测试覆盖只绑定本机回环地址，不启动 Caddy。
+聊天站地址为 `http://localhost:8090`（也可在 Windows 使用 WSL IP），New API 管理台地址为 `http://localhost:3001`。WSL 覆盖将 New API 端口限制在本机回环地址，不启动 Caddy；聊天预览使用 WSL 网卡的 8090 端口。
 
 ## GitHub 镜像发布
 

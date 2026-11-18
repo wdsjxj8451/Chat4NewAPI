@@ -126,7 +126,7 @@ docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.w
 docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml up -d chat new-api
 ```
 
-Open the chat at `http://localhost:8090` and the New API console at `http://localhost:3001`. The WSL test override binds both ports to loopback only and does not start Caddy.
+Open the chat at `http://localhost:8090` (or the WSL IP from Windows) and the New API console at `http://localhost:3001`. The WSL override binds New API to loopback and does not start Caddy; the chat preview uses port 8090 on the WSL interface.
 
 ## Release Images
 
