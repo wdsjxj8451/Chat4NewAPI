@@ -109,6 +109,25 @@ pnpm test
 pnpm build
 ```
 
+### Run the full stack in WSL
+
+On Debian/Ubuntu WSL with systemd enabled, install Docker Engine and Compose in the Linux distribution (not Windows Docker Desktop):
+
+```sh
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose
+sudo systemctl enable --now docker
+```
+
+Create `deploy/.env` from `deploy/.env.example`, use `localhost` for both domains, and fill the four secrets with random hex values. Then build and start the chat and New API services with localhost-only test ports:
+
+```sh
+docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml build chat
+docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml up -d chat new-api
+```
+
+Open the chat at `http://localhost:8090` and the New API console at `http://localhost:3001`. The WSL test override binds both ports to loopback only and does not start Caddy.
+
 ## Release Images
 
 Push a version tag such as `v1.0.0`. GitHub Actions runs checks and publishes `linux/amd64` and `linux/arm64` images to `ghcr.io/OWNER/Chat4NewAPI`. The installer expects that package to be public. The deployment scripts fetched for an install or upgrade are taken from the matching Git ref.

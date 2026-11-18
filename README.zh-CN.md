@@ -109,6 +109,25 @@ pnpm test
 pnpm build
 ```
 
+### 在 WSL 运行完整服务
+
+Debian/Ubuntu WSL 需启用 systemd；Docker Engine 与 Compose 安装在 Linux 发行版中，不安装 Windows Docker Desktop：
+
+```sh
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose
+sudo systemctl enable --now docker
+```
+
+从 `deploy/.env.example` 创建 `deploy/.env`，两个域名设为 `localhost`，并填入四个随机十六进制密钥。随后构建聊天容器并启动聊天站和 New API：
+
+```sh
+docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml build chat
+docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml up -d chat new-api
+```
+
+聊天站地址为 `http://localhost:8090`，New API 管理台地址为 `http://localhost:3001`。WSL 测试覆盖只绑定本机回环地址，不启动 Caddy。
+
 ## GitHub 镜像发布
 
 推送 `v1.0.0` 形式的版本标签后，GitHub Actions 会先运行检查，再构建并发布 `linux/amd64`、`linux/arm64` 镜像到 `ghcr.io/OWNER/Chat4NewAPI`。请将镜像包设置为公开。安装和升级使用对应 Git ref 中的部署脚本。
