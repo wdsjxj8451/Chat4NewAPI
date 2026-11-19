@@ -4,7 +4,9 @@
   flex-shrink: 0;
   box-sizing: border-box;
   height: 60px;
-  padding: 12px 10px 4px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--chat-line);
+  background: var(--chat-canvas);
 }
 
 .title {
@@ -14,6 +16,11 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  text-align: center;
   font: var(--dsw-font-s-strong-14);
   color: var(--dsw-alias-label-primary);
+}
+
+.balance {
+  width: var(--ds-control-height-xl);
 }

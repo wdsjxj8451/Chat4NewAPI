@@ -158,7 +158,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
 
   return (
     <div
-      className={clsx(styles.wrapper, sessionId === null ? styles.home : styles.session)}
+      className={styles.wrapper}
       onClick={(event) => {
         if (event.target === event.currentTarget) {
           textareaRef.current?.focus({ preventScroll: true })
@@ -170,6 +170,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
         <textarea
           ref={textareaRef}
           className={clsx(styles.textarea, recording && isMobile && styles.textareaHidden)}
+          aria-label={t('chatInputPlaceholderChat')}
           placeholder={t('chatInputPlaceholderChat')}
           rows={2}
           // 移动端不自动聚焦，避免一打开就弹出键盘
@@ -207,7 +208,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
         {/* 深度思考 / 智能搜索开关，tooltip 在按钮上方 */}
         <div className={styles.modelPicker}>
           <select
-            aria-label="选择模型"
+            aria-label={t('modelPickerLabel')}
             value={model}
             disabled={!models.length}
             onChange={(event) => setModel(event.target.value)}
@@ -219,7 +220,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
                 </option>
               ))
             ) : (
-              <option value={model}>尚无可用模型</option>
+              <option value={model}>{t('noAvailableModels')}</option>
             )}
           </select>
         </div>
@@ -307,7 +308,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
               className={clsx(styles.sendButton, !canSend && styles.disabled)}
               aria-label={t('send')}
               aria-disabled={!canSend}
-              onClick={send}
+              onClick={() => canSend && send()}
             >
               <IconSendOutline16 />
             </button>

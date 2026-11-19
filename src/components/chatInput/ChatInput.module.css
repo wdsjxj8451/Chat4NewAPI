@@ -1,6 +1,6 @@
 .wrapper {
   --line-height: 24px;
-  --input-padding-top: 12px;
+  --input-padding-top: 16px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -8,27 +8,16 @@
   cursor: text;
   font-size: 16px;
   line-height: var(--line-height);
-  border-radius: 24px;
-  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
+  border-radius: 21px;
+  border: 1px solid transparent;
   background: var(--dsw-specific-input-major);
+  box-shadow: var(--chat-composer-shadow);
   overflow: hidden;
+  transition: border-color var(--chat-feedback) var(--chat-ease);
 }
 
-.session {
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.02),
-    0 2px 4px rgba(0, 0, 0, 0.04);
-}
-
-.home {
-  box-shadow:
-    0 4px 12px 0 rgba(0, 0, 0, 0.02),
-    0 2px 2px 0 rgba(72, 104, 178, 0.01),
-    0 30px 60px 0 rgba(72, 104, 178, 0.03);
-
-  [data-ds-dark-theme] & {
-    box-shadow: none;
-  }
+.wrapper:focus-within {
+  border-color: var(--chat-accent);
 }
 
 .attachments {
@@ -175,7 +164,7 @@
   width: 100%;
   min-height: calc(var(--line-height) * 2 + var(--input-padding-top));
   margin: 0;
-  padding: var(--input-padding-top) 12px 0 16px;
+  padding: var(--input-padding-top) 16px 0;
   border: none;
   font: inherit;
   line-height: inherit;
@@ -196,7 +185,7 @@
   caret-color: var(--dsw-alias-brand-text);
 
   &::placeholder {
-    color: var(--dsw-alias-label-caption);
+    color: var(--chat-muted);
     user-select: none;
   }
 }
@@ -238,34 +227,42 @@
 .functionRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-top: 4px;
-  padding: 12px;
+  padding: 9px 10px;
 }
 
-.modelPicker { flex-shrink: 1; min-width: 110px; max-width: 190px; }
+.modelPicker {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 188px;
+}
 
 .modelPicker select {
   box-sizing: border-box;
   width: 100%;
   height: 34px;
-  padding: 0 26px 0 10px;
+  padding: 0 8px;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 6px;
-  background: transparent;
+  border-radius: 9px;
+  background-color: var(--chat-surface);
   color: var(--dsw-alias-label-primary);
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 
-.modelPicker select:disabled { opacity: .65; }
+.modelPicker select:disabled {
+  color: var(--chat-muted);
+  cursor: default;
+}
 
 .toggles {
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -281,8 +278,8 @@
   gap: 4px;
   height: 34px;
   padding: 0 12px;
-  border-radius: 18px;
-  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 9px;
+  border: 1px solid transparent;
   background-color: transparent;
   color: var(--dsw-alias-label-primary);
   font: inherit;
@@ -292,8 +289,10 @@
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  transition-property: border, background;
-  transition-duration: 0.2s;
+  transition:
+    background-color var(--chat-feedback),
+    color var(--chat-feedback),
+    border-color var(--chat-feedback);
 
   &:hover:not(:disabled) {
     background-color: var(--dsw-alias-interactive-bg-hover);
@@ -328,23 +327,53 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  margin-left: 6px;
+  width: 37px;
+  height: 37px;
+  margin-left: 2px;
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: 12px;
   background: var(--dsw-alias-button-primary-fill);
   color: var(--dsw-static-neutral-bluish-00);
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition:
+    background-color var(--chat-feedback),
+    color var(--chat-feedback);
+
+  > svg {
+    transition: scale var(--chat-feedback) var(--chat-ease);
+  }
+
+  &:not(.disabled):active > svg {
+    scale: 0.87;
+  }
 
   &:not(.disabled):hover {
     background: var(--dsw-alias-button-primary-hover);
   }
 
   &.disabled {
-    opacity: 0.4;
+    background: var(--chat-hover);
+    color: var(--chat-muted);
     cursor: not-allowed;
+  }
+}
+
+@media (max-width: 767px) {
+  .toggles {
+    flex-basis: auto;
+  }
+
+  .toggleLabel {
+    display: none;
+  }
+
+  .toggle {
+    width: 32px;
+    padding: 0;
+  }
+
+  .modelPicker select {
+    font-size: 16px;
   }
 }

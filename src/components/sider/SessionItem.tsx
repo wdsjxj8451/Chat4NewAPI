@@ -48,14 +48,18 @@ export const SessionItem = memo(function SessionItem({
   }
 
   return (
-    <div
-      className={clsx(styles.item, active && styles.active)}
-      onClick={() => {
-        selectSession(session.id)
-        closeMobileSider()
-      }}
-    >
-      <div className={styles.title}>{displayTitle}</div>
+    <div className={clsx(styles.item, active && styles.active)}>
+      <button
+        type="button"
+        className={styles.title}
+        aria-current={active ? 'page' : undefined}
+        onClick={() => {
+          selectSession(session.id)
+          closeMobileSider()
+        }}
+      >
+        {displayTitle}
+      </button>
       <div className={styles.action} onClick={(event) => event.stopPropagation()}>
         <Menu
           options={[

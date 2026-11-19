@@ -128,6 +128,8 @@ export const zh = {
   uploadFileStatusFailed: '上传失败',
   uploadRetry: '{message}，点击重试',
   chatInputPlaceholderChat: '请输入消息',
+  modelPickerLabel: '选择模型',
+  noAvailableModels: '尚无可用模型',
   deactivatedThinkTooltip: '先思考后回答，解决推理问题',
   thinkingSwitch: '深度思考',
   deactivatedSearchTooltip: '按需搜索网页',

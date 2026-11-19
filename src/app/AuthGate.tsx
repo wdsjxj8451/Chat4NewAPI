@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { createFirstAdmin, refreshAuth, signIn, useAuth } from '../services/auth.js'
 import { loadModels } from '../services/modelCatalog.js'
+import { BrandMark } from '../components/base/BrandMark.js'
 import { AdminPage } from './AdminPage.js'
 import styles from './AuthGate.module.css'
 
@@ -67,7 +68,7 @@ const AuthForm = ({
   return (
     <main className={styles.authPage}>
       <section className={styles.authPanel}>
-        <div className={styles.brandMark}>C4</div>
+        <BrandMark />
         <p className={styles.eyebrow}>Chat4NewAPI</p>
         <h1>{setup ? '创建管理员' : '登录'}</h1>
         <p className={styles.subtitle}>

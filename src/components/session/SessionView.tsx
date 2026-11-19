@@ -26,9 +26,9 @@ export const SessionView = ({
         <MobileHeader title={title} />
       ) : (
         <div className={styles.header}>
-          <div className={clsx(styles.title, siderCollapsed && styles.withCollapsedSider)}>
+          <h1 className={clsx(styles.title, siderCollapsed && styles.withCollapsedSider)}>
             {title}
-          </div>
+          </h1>
         </div>
       )}
       <MessageList

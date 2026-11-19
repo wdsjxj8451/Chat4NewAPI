@@ -17,17 +17,17 @@ export const MobileHeader = ({ title }: { title?: string }) => {
         aria-label={t('expandSiderbarButton')}
         onClick={openMobileSider}
       />
-      {title === undefined ? null : (
-        <>
-          <div className={styles.title}>{title}</div>
-          <IconButton
-            size="xl"
-            tone="primary"
-            icon={<IconNewChatOutline20 />}
-            aria-label={t('newChat')}
-            onClick={newChat}
-          />
-        </>
+      <div className={styles.title}>{title ?? t('appName')}</div>
+      {title !== undefined ? (
+        <IconButton
+          size="xl"
+          tone="primary"
+          icon={<IconNewChatOutline20 />}
+          aria-label={t('newChat')}
+          onClick={newChat}
+        />
+      ) : (
+        <span className={styles.balance} />
       )}
     </div>
   )
