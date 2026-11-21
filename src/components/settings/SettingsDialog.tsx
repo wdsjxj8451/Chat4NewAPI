@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { useRef, useState, type ReactNode } from 'react'
 import {
   IconDarkOutline16,
+  IconBrowseOutline16,
   IconDataOutline16,
   IconDownloadOutline16,
   IconFollowsystemOutline16,
@@ -9,6 +10,7 @@ import {
   IconSettingsOutline16,
   IconUploadOutline14,
 } from '../base/icons.js'
+import { AppearanceSettings } from './AppearanceSettings.js'
 import {
   BackupError,
   clearHistory,
@@ -16,6 +18,7 @@ import {
   importHistory,
 } from '../../services/chat/backup.js'
 import { useChatStore } from '../../services/chat/store.js'
+import { useAuth } from '../../services/auth.js'
 import { regionCodes, getRegionName, provinces } from '../../services/location.js'
 import {
   isChineseBrowser,
@@ -49,16 +52,20 @@ const sections: { value: SettingsSection; label: TranslationKey; icon: ReactNode
     label: 'settingDialogAsideGeneralOptionLabel',
     icon: <IconSettingsOutline16 />,
   },
+  { value: 'appearance', label: 'appearance', icon: <IconBrowseOutline16 /> },
   { value: 'data', label: 'settingDialogAsideDataOptionLabel', icon: <IconDataOutline16 /> },
 ]
 
 const SettingsContent = () => {
   const t = useTranslate()
+  const isAdmin = useAuth((state) => state.user?.isAdmin === true)
   // 打开时按调用方指定的分组选中，之后在弹窗内切换
   const [section, setSection] = useState(() => useSettingsDialog.getState().section)
   // Keep an in-progress history import when switching sections.
   const historyImport = useHistoryImport()
   const historyDelete = useHistoryDelete()
+  const selectedSection = section === 'appearance' && !isAdmin ? 'general' : section
+  const visibleSections = sections.filter((item) => item.value !== 'appearance' || isAdmin)
   const replacingHistory = useChatStore((state) => state.importingHistory)
   const historyBusy = historyImport.busy || historyDelete.busy || replacingHistory
   return (
@@ -75,13 +82,16 @@ const SettingsContent = () => {
         }}
       >
         <div role="tablist" className={styles.navigation}>
-          {sections.map((item) => (
+          {visibleSections.map((item) => (
             <button
               key={item.value}
               type="button"
               role="tab"
-              aria-selected={section === item.value}
-              className={clsx(styles.navItem, section === item.value && styles.navItemActive)}
+              aria-selected={selectedSection === item.value}
+              className={clsx(
+                styles.navItem,
+                selectedSection === item.value && styles.navItemActive
+              )}
               onClick={() => setSection(item.value)}
             >
               {item.icon}
@@ -90,13 +100,15 @@ const SettingsContent = () => {
           ))}
         </div>
         <div role="tabpanel" className={styles.content}>
-          {section === 'general' ? (
+          {selectedSection === 'general' ? (
             <>
               <ThemeSetting />
               <LocaleSetting />
               <TtsVoiceSetting />
               <LocationSetting />
             </>
+          ) : selectedSection === 'appearance' ? (
+            <AppearanceSettings />
           ) : (
             <>
               <SettingCell

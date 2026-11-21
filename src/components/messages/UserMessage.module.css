@@ -31,7 +31,7 @@
   max-width: calc(100% - 88px);
   box-sizing: border-box;
   padding: 10px 16px;
-  border-radius: 22px;
+  border-radius: 19px 19px 6px 19px;
   font-size: 16px;
   line-height: 24px;
   color: var(--dsw-alias-label-primary);
@@ -40,9 +40,31 @@
   word-break: break-word;
 }
 
+.container.isLast .bubble {
+  animation: arrive var(--chat-enter) var(--chat-ease) both;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media not all and (min-width: 440px) {
   .bubble {
     max-width: calc(100% - 68px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .container.isLast .bubble {
+    animation: none;
   }
 }
 

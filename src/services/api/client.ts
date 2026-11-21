@@ -6,13 +6,14 @@ import type {
   CreateMessageRequest,
   FileObject,
   FilePurpose,
+  GatewayProtocol,
   MessageStreamEvent,
 } from './types.js'
 
 /** Same-origin authenticated proxy; provider credentials remain on the server. */
 export const API_ORIGIN = __API_ORIGIN__
-/** Anthropic 兼容接口的前缀 */
-const ANTHROPIC_BASE_URL = `${API_ORIGIN}/anthropic/v1`
+/** Canonical client protocol; the server adapts it to the configured gateway API. */
+const MESSAGE_API_BASE_URL = `${API_ORIGIN}/anthropic/v1`
 /** 引用 Files API 上传的图片、调用 Anthropic 兼容 Files API 时必须携带 */
 const FILES_BETA = 'files-api-2025-04-14'
 
@@ -110,27 +111,46 @@ export const deleteLocalFile = async (id: string): Promise<void> => {
 export const uploadFile = async (
   file: File,
   purpose: FilePurpose | null,
+  protocol: GatewayProtocol,
   signal?: AbortSignal
 ): Promise<FileObject> => {
   const form = new FormData()
-  if (purpose) {
-    form.append('purpose', purpose)
+  const filePurpose = protocol === 'openai-responses' ? 'user_data' : purpose
+  if (filePurpose) {
+    form.append('purpose', filePurpose)
   }
   form.append('file', file)
-  const response = await request(`${ANTHROPIC_BASE_URL}/files`, {
+  const response = await request(`${MESSAGE_API_BASE_URL}/files`, {
     method: 'POST',
-    headers: anthropicHeaders(true),
+    headers: protocol === 'anthropic-messages' ? anthropicHeaders(true) : {},
     body: form,
     signal,
   })
-  return (await response.json()) as FileObject
+  const result = (await response.json()) as Partial<FileObject> & { bytes?: number }
+  if (typeof result.id !== 'string') {
+    throw new ApiError('protocol', 'Gateway returned no file id')
+  }
+  const createdAt =
+    typeof result.created_at === 'string'
+      ? result.created_at
+      : typeof result.created_at === 'number'
+        ? new Date(result.created_at * 1000).toISOString()
+        : new Date().toISOString()
+  return {
+    id: result.id,
+    type: 'file',
+    size_bytes: result.size_bytes ?? result.bytes ?? file.size,
+    created_at: createdAt,
+    filename: result.filename || file.name,
+    mime_type: result.mime_type || file.type || 'application/octet-stream',
+  }
 }
 
-/** DELETE /anthropic/v1/files/{file_id} */
-export const deleteFile = async (fileId: string): Promise<void> => {
-  await request(`${ANTHROPIC_BASE_URL}/files/${encodeURIComponent(fileId)}`, {
+/** DELETE the gateway's file resource. */
+export const deleteFile = async (fileId: string, protocol: GatewayProtocol): Promise<void> => {
+  await request(`${MESSAGE_API_BASE_URL}/files/${encodeURIComponent(fileId)}`, {
     method: 'DELETE',
-    headers: anthropicHeaders(true),
+    headers: protocol === 'anthropic-messages' ? anthropicHeaders(true) : {},
   })
 }
 
@@ -147,12 +167,13 @@ const hasFile = (body: CreateMessageRequest) =>
  */
 export async function* streamMessage(
   body: CreateMessageRequest,
-  signal: AbortSignal
+  signal: AbortSignal,
+  protocol: GatewayProtocol = 'anthropic-messages'
 ): AsyncGenerator<MessageStreamEvent> {
-  const response = await request(`${ANTHROPIC_BASE_URL}/messages`, {
+  const response = await request(`${MESSAGE_API_BASE_URL}/messages`, {
     method: 'POST',
     headers: {
-      ...anthropicHeaders(hasFile(body)),
+      ...(protocol === 'anthropic-messages' ? anthropicHeaders(hasFile(body)) : {}),
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
     },

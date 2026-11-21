@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ChatModel } from './api/types.js'
+import type { ChatModel, GatewayProtocol } from './api/types.js'
 import { setModel, useSettings } from './settings.js'
 
 export type ModelCapabilities = {
@@ -11,9 +11,19 @@ export type ModelCapabilities = {
 }
 
 export type AvailableModel = { id: ChatModel; capabilities: ModelCapabilities }
-type ModelState = { models: AvailableModel[]; loading: boolean; error: string }
+type ModelState = {
+  models: AvailableModel[]
+  protocol: GatewayProtocol
+  loading: boolean
+  error: string
+}
 
-export const useModelCatalog = create<ModelState>(() => ({ models: [], loading: true, error: '' }))
+export const useModelCatalog = create<ModelState>(() => ({
+  models: [],
+  protocol: 'anthropic-messages',
+  loading: true,
+  error: '',
+}))
 
 export const loadModels = async () => {
   useModelCatalog.setState({ loading: true, error: '' })
@@ -24,7 +34,8 @@ export const loadModels = async () => {
       throw new Error(result.error || 'Unable to load models')
     }
     const models = (result.models ?? []) as AvailableModel[]
-    useModelCatalog.setState({ models, loading: false, error: '' })
+    const protocol = (result.protocol ?? 'anthropic-messages') as GatewayProtocol
+    useModelCatalog.setState({ models, protocol, loading: false, error: '' })
     const selected = useSettings.getState().model
     if (models.length && !models.some((model) => model.id === selected)) {
       setModel(models[0].id)
@@ -33,6 +44,7 @@ export const loadModels = async () => {
   } catch (error) {
     useModelCatalog.setState({
       models: [],
+      protocol: 'anthropic-messages',
       loading: false,
       error: error instanceof Error ? error.message : String(error),
     })

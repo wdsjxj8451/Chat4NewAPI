@@ -4,6 +4,12 @@
   height: 500px;
   max-height: calc(100vh - 32px);
   padding: 19px 24px 22px;
+  border-radius: 26px;
+}
+
+.dialog.dialog {
+  width: 760px;
+  border-radius: 26px;
 }
 
 .dialogMain {
@@ -192,6 +198,145 @@
   }
 }
 
+.appearance {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+.appearanceDescription {
+  margin: 0 0 2px;
+  color: var(--chat-muted);
+  line-height: 1.55;
+}
+
+.appearancePreview {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 13px 15px;
+  border-radius: 16px;
+  background: var(--chat-sidebar);
+}
+
+.appearancePreviewIcon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--chat-surface);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.appearancePreviewText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--chat-ink);
+  }
+
+  > span {
+    color: var(--chat-muted);
+    font-size: 12px;
+  }
+}
+
+.appearanceSwatch {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 8px;
+}
+
+.appearanceField {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  padding: 8px 0;
+  color: var(--chat-ink);
+}
+
+.appearanceFieldText {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.appearanceField > input[type='text'] {
+  width: min(100%, 245px);
+  min-width: 0;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--chat-line);
+  border-radius: 11px;
+  background: var(--chat-canvas);
+  color: var(--chat-ink);
+  font: inherit;
+}
+
+.appearanceField input[type='color'] {
+  width: 48px;
+  height: 38px;
+  flex: none;
+  padding: 4px;
+  border: 1px solid var(--chat-line);
+  border-radius: 11px;
+  background: var(--chat-surface);
+  cursor: pointer;
+}
+
+.appearanceIconControls {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.appearanceToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  color: var(--chat-ink);
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--chat-accent);
+  }
+}
+
+.appearanceActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
 .description {
   font-size: 12px;
   line-height: 18px;
@@ -298,6 +443,11 @@
     border-radius: 24px 24px 0 0;
   }
 
+  .dialog.dialog {
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+  }
+
   .dialogMain {
     flex-direction: column;
   }
@@ -307,34 +457,57 @@
     width: auto;
     margin: 6px -4px;
     padding: 4px 0;
-    overflow-x: auto;
+    gap: 2px;
   }
 
   .navItem {
-    flex: 1 0 auto;
+    flex: 1 1 0;
     justify-content: center;
     width: auto;
-    min-width: 108px;
+    min-width: 0;
     margin: 0;
+    gap: 5px;
+    padding: 8px 4px;
+    font-size: 12px;
     white-space: nowrap;
-
-    &:first-child {
-      margin-left: 4px;
-    }
-
-    &:last-child {
-      margin-right: 4px;
-    }
   }
 
   .content {
-    padding-top: 24px;
+    padding-top: 12px;
     padding-left: 0;
     padding-bottom: env(safe-area-inset-bottom);
   }
 
   .text {
     padding-right: 8px;
+  }
+
+  .appearanceField {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .appearanceFieldText {
+    min-width: 0;
+  }
+
+  .appearanceField > input[type='text'] {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .appearanceIconControls {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .appearanceActions > button {
+    flex: 1;
+    min-width: 0;
+    height: auto;
+    min-height: 44px;
+    white-space: normal;
   }
 
   .cellButton {

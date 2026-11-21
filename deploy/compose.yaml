@@ -8,34 +8,20 @@ services:
       APP_DATA_DIR: /app/data
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?Set APP_ENCRYPTION_KEY}
       SETUP_TOKEN: ${SETUP_TOKEN:?Set SETUP_TOKEN}
+      DEFAULT_MODEL_API_URL: ${DEFAULT_MODEL_API_URL:-}
     volumes:
       - ./data/chat:/app/data
-    depends_on:
-      - new-api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - app
-
-  new-api:
-    image: calciumion/new-api:latest
-    restart: unless-stopped
-    environment:
-      TZ: Asia/Shanghai
-      SESSION_SECRET: ${NEWAPI_SESSION_SECRET:?Set NEWAPI_SESSION_SECRET}
-      CRYPTO_SECRET: ${NEWAPI_CRYPTO_SECRET:?Set NEWAPI_CRYPTO_SECRET}
-      SESSION_COOKIE_SECURE: "true"
-      SESSION_COOKIE_TRUSTED_URL: https://${NEWAPI_DOMAIN:?Set NEWAPI_DOMAIN}
-      TRUSTED_PROXIES: 172.16.0.0/12,192.168.0.0/16
-    volumes:
-      - ./data/newapi:/data
-    networks:
-      - app
+      - models
 
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
     environment:
       CHAT_DOMAIN: ${CHAT_DOMAIN:?Set CHAT_DOMAIN}
-      NEWAPI_DOMAIN: ${NEWAPI_DOMAIN:?Set NEWAPI_DOMAIN}
     ports:
       - "80:80"
       - "443:443"
@@ -46,13 +32,15 @@ services:
       - caddy_config:/config
     depends_on:
       - chat
-      - new-api
     networks:
       - app
 
 networks:
   app:
     driver: bridge
+  models:
+    name: chat4newapi-models
+    external: true
 
 volumes:
   caddy_data:

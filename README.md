@@ -2,81 +2,72 @@
 
 # Chat4NewAPI
 
-**A private, self-hosted AI chat workspace for New API**
+**A self-hosted AI chat workspace for the gateways you already run.**
 
-One chat interface for the model providers you already manage in New API.
-Keep credentials on the server, conversations on your VPS, and invite only the people you trust.
+One private chat app for Anthropic Messages, OpenAI Chat Completions, and OpenAI Responses APIs.
 
-[简体中文](README.zh-CN.md) · [Features](#features) · [Architecture](#architecture) · [Deploy](#deploy-to-a-vps)
+[![GitHub stars](https://img.shields.io/github/stars/wdsjxj8451/Chat4NewAPI?style=social)](https://github.com/wdsjxj8451/Chat4NewAPI/stargazers)
+[![Package version](https://img.shields.io/github/package-json/v/wdsjxj8451/Chat4NewAPI?filename=package.json)](package.json)
+[![Latest release](https://img.shields.io/github/v/release/wdsjxj8451/Chat4NewAPI?label=version)](https://github.com/wdsjxj8451/Chat4NewAPI/releases)
+[![License](https://img.shields.io/github/license/wdsjxj8451/Chat4NewAPI)](LICENSE)
+[![Publish](https://img.shields.io/github/actions/workflow/status/wdsjxj8451/Chat4NewAPI/publish.yml?branch=main&label=build)](https://github.com/wdsjxj8451/Chat4NewAPI/actions/workflows/publish.yml)
+
+[简体中文](README.zh-CN.md) · [Quick Start](#quick-start) · [API Compatibility](#api-compatibility) · [Operations](#operations) · [Development](#development) · [Releases](#releases-and-images)
 
 </div>
 
 ---
 
-## What It Is
+## First-Run Experience
 
-Chat4NewAPI is a self-hosted, multi-user chat frontend powered by [New API](https://github.com/QuantumNous/new-api). It adapts the open-source [DeepSeek chat-demo](https://github.com/deepseek-ai/chat-demo) experience into a server-backed application with accounts, persistent chat history, model selection, and an administrator console.
+![Chat4NewAPI first-run administrator setup](docs/images/first-run-setup.png)
 
-Configure an upstream once in New API, then let invited users choose from the models available to the gateway. Browser clients never receive provider keys or the New API token.
+After setup, the administrator console configures the gateway protocol, model capabilities, shared prompt, and site appearance.
+
+Chat4NewAPI adapts the open-source [DeepSeek chat-demo](https://github.com/deepseek-ai/chat-demo) into a private, multi-user workspace with server-managed accounts, persistent conversations, model selection, and an admin console. API keys stay on the server; conversations and uploaded originals stay in your own storage.
+
+## API Compatibility
+
+Choose the protocol your aggregator exposes in **Admin → Model service**. Chat4NewAPI normalizes the response stream for one chat UI, so users keep the same conversation experience when you switch gateways.
+
+| Protocol | Upstream endpoint | Notes |
+| --- | --- | --- |
+| Anthropic Messages | `/v1/messages` | Native Messages forwarding, Files API, thinking, and compatible tools. |
+| OpenAI Chat Completions | `/v1/chat/completions` | Streaming text and compatible reasoning/audio options. File, image, and search controls are hidden because this protocol path does not currently adapt them. |
+| OpenAI Responses | `/v1/responses` | Streaming text/reasoning, Responses file references, and the built-in web search tool when the provider supports them. |
+
+All protocols use the common `/v1/models` endpoint for discovery. New API, Sub2API, and other gateways work when they expose the selected compatible protocol. Endpoint availability, file handling, tools, reasoning, and audio remain provider-specific; the admin console hides controls known to be unsupported by the selected protocol.
+
+**Current compatibility boundary:** Chat Completions supports streamed text and reasoning deltas. File and image inputs and search controls are currently available through Messages or Responses, not the Chat Completions adapter. The Responses adapter maps file references and web search; the gateway must support the OpenAI-compatible `/v1/files` and `/v1/responses` endpoints for those features.
 
 ## Features
 
-| Area | What Chat4NewAPI provides |
-| --- | --- |
-| Multi-provider chat | Select models exposed by New API and stream replies through a same-origin, authenticated server proxy. |
-| Familiar chat workspace | Conversation history, branches, rename/delete, edit, regenerate, Markdown, syntax highlighting, KaTeX, and Mermaid. |
-| Model-aware controls | Enable reasoning, search, files, vision, and voice per model; unsupported controls stay hidden. |
-| Private accounts | First-run owner setup, invite-only account creation, disable/re-enable access, and per-user conversation isolation. |
-| VPS-owned data | SQLite stores accounts, chats, usage, and configuration; uploaded originals live in a local persistent directory. |
-| Operations | Docker Compose, Caddy-managed HTTPS, health checks, backup/restore, versioned images, and an interactive installer. |
+- Private first-run admin setup, invite-only accounts, access controls, and per-user chat isolation.
+- Persistent chats, branches, rename/delete, edit/regenerate, Markdown, code highlighting, KaTeX, and Mermaid.
+- Per-model controls for reasoning, search, attachments, vision, and voice where supported.
+- Admin-editable shared system prompt, site name, browser icon, and accent color.
+- SQLite metadata, local attachment storage, encrypted gateway credentials, and backup/restore.
+- Docker Compose, Caddy-managed HTTPS, health checks, GHCR images, and a one-command VPS installer.
 
-DeepSeek search/read-link tools and file or audio APIs depend on the selected New API channel and upstream. Enable a capability only after testing that exact model route.
+## Quick Start
 
-## Architecture
-
-```mermaid
-flowchart LR
-  Browser[Invited users] -->|HTTPS, session cookie| Chat[Chat4NewAPI on VPS]
-  Admin[Administrator] -->|HTTPS| Console[New API console]
-  Chat -->|SQLite and local files| Disk[(Persistent VPS storage)]
-  Chat -->|Internal network, server-side key| Gateway[New API]
-  Gateway --> ProviderA[DeepSeek]
-  Gateway --> ProviderB[Other model providers]
-  DNS[Cloudflare DNS] -. resolves .-> Chat
-  DNS -. resolves .-> Console
-  Caddy[Caddy TLS reverse proxy] --> Chat
-  Caddy --> Console
-```
-
-Cloudflare is used for DNS. Caddy obtains and renews HTTPS certificates. Chat4NewAPI and New API communicate over the private Compose network; New API's upstream providers are configured in its own admin console.
-
-## Deploy to a VPS
-
-### Requirements
-
-- A public Ubuntu or Debian VPS with inbound TCP ports 80 and 443 available.
-- Two DNS hostnames pointing to that VPS, for example `chat.example.com` and `newapi.example.com`.
-- A public GitHub repository and its GHCR package set to public after the first image release.
-
-Create the DNS records in Cloudflare first. Then run the installer as root on the VPS:
+Requirements: Ubuntu or Debian VPS, Docker Compose, one DNS hostname, and a public GHCR package.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/OWNER/Chat4NewAPI/main/deploy/install.sh | sudo bash -s -- OWNER/Chat4NewAPI
+curl -fsSL https://raw.githubusercontent.com/wdsjxj8451/Chat4NewAPI/main/deploy/install.sh | sudo bash -s -- wdsjxj8451/Chat4NewAPI
 ```
 
-The installer checks Ubuntu/Debian, installs Docker Engine on the VPS only when needed, asks for both hostnames, generates unique secrets, downloads the Compose files, and starts Chat4NewAPI, New API, and Caddy. It prints a one-time token used to initialize the Chat4NewAPI owner account. Do not lose the installer output before completing first-run setup.
+The installer checks common local New API/Sub2API container names and ports. If it finds a service, it suggests its reachable API address. If not, it offers to pull the official New API image into a separate Compose project. Chat4NewAPI itself never bundles or depends on that gateway.
 
-### First run
+1. Point your chat DNS record at the VPS and allow inbound ports 80 and 443.
+2. Run the installer and keep the one-time owner setup token it prints.
+3. Open the chat site, create the administrator, then visit `/admin`.
+4. Set the gateway name, protocol, base URL, and API key. Save and test the connection.
+5. Verify model capabilities, adjust the shared prompt and appearance, then invite users.
 
-1. Open the chat hostname and use the installer token to create the Chat4NewAPI owner account.
-2. Open the New API hostname and complete New API's separate administrator setup.
-3. Add provider channels and enable models in New API.
-4. In Chat4NewAPI at `/admin`, configure the New API-issued token and internal URL `http://new-api:3000`.
-5. Verify the model list, enable only the model capabilities you tested, then create invited user accounts.
+For an independently installed New API dashboard, use an SSH tunnel to the VPS loopback port `3300`; it is not exposed publicly by the installer.
 
-Use Cloudflare Access to restrict the New API hostname to administrators. Cloudflare proxying is optional; if enabled, allow certificate validation traffic to reach the VPS.
-
-## Operate
+## Operations
 
 ```sh
 chat4newapi status
@@ -86,11 +77,11 @@ chat4newapi update v1.0.0
 chat4newapi restore
 ```
 
-Data is stored under `/opt/chat4newapi/data`; backups are under `/opt/chat4newapi/backups`. Backups include the local database, attachments, New API data, deployment configuration, and encryption keys. Keep an additional copy off the VPS. Restore and data deletion require explicit confirmation; uninstall keeps data by default.
+Chat data lives in `/opt/chat4newapi/data`; backups are in `/opt/chat4newapi/backups`. A backup includes Chat4NewAPI's database, attachments, deployment files, and encryption key, but not data owned by an independent gateway. Keep an off-server copy of both gateway data and `/opt/chat4newapi/.env`.
 
-Protect `/opt/chat4newapi/.env`. It contains the encryption key for the stored New API token and deployment secrets. Losing it prevents decrypting that token.
+To pin an install to a release, pass its version tag to the installer, for example `v1.2.0`. `chat4newapi update v1.2.0` upgrades to that image and refreshes the deployment files from the matching Git tag. A plain `chat4newapi update` tracks `main` and `latest`.
 
-## Develop and Test
+## Development
 
 Requirements: Node.js 22.12+ and pnpm 9.
 
@@ -99,39 +90,20 @@ pnpm install
 APP_ENCRYPTION_KEY="$(openssl rand -hex 32)" pnpm dev
 ```
 
-Open `http://localhost:8090`. The frontend proxies `/api` to the backend on port 3100. Create the initial owner, then configure a reachable New API URL and token in `/admin`.
+Open `http://localhost:8090`. Configure a gateway reachable from the chat server; browser clients never connect to provider credentials directly.
 
 ```sh
+pnpm test
 pnpm type
 pnpm lint
 pnpm check:server
-pnpm test
 pnpm build
 ```
 
-### Run the full stack in WSL
+## Releases and Images
 
-On Debian/Ubuntu WSL with systemd enabled, install Docker Engine and Compose in the Linux distribution (not Windows Docker Desktop):
-
-```sh
-sudo apt-get update
-sudo apt-get install -y docker.io docker-compose
-sudo systemctl enable --now docker
-```
-
-Create `deploy/.env` from `deploy/.env.example`, use `localhost` for both domains, and fill the four secrets with random hex values. Then build and start the chat and New API services with localhost-only test ports:
-
-```sh
-docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml build chat
-docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml up -d chat new-api
-```
-
-Open the chat at `http://localhost:8090` (or the WSL IP from Windows) and the New API console at `http://localhost:3001`. The WSL override binds New API to loopback and does not start Caddy; the chat preview uses port 8090 on the WSL interface.
-
-## Release Images
-
-Push a version tag such as `v1.0.0`. GitHub Actions runs checks and publishes `linux/amd64` and `linux/arm64` images to `ghcr.io/OWNER/Chat4NewAPI`. The installer expects that package to be public. The deployment scripts fetched for an install or upgrade are taken from the matching Git ref.
+Push a `vX.Y.Z` tag to run the GitHub Actions checks and publish `linux/amd64` and `linux/arm64` images to `ghcr.io/wdsjxj8451/chat4newapi`. The installer script and Compose/Caddy deployment files live in [`deploy/`](deploy/); keep the GHCR package public for one-command installs. The package-version badge follows `package.json`; the release badge appears when a GitHub Release exists.
 
 ## License
 
-The chat UI is adapted from DeepSeek's MIT-licensed `chat-demo`. Preserve [LICENSE](LICENSE) and third-party notices when redistributing. New API, model-provider APIs, and models retain their respective licenses and terms.
+MIT. The chat UI is adapted from DeepSeek's MIT-licensed `chat-demo`; preserve [LICENSE](LICENSE) and third-party notices when redistributing. Connected gateways, model-provider APIs, and models retain their own licenses and service terms.

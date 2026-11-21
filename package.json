@@ -1,7 +1,7 @@
 {
   "name": "chat4newapi",
   "version": "0.1.0",
-  "description": "Chat4NewAPI is a self-hosted multi-provider AI chat frontend powered by New API.",
+  "description": "Chat4NewAPI is a self-hosted chat workspace for Anthropic Messages, OpenAI Chat Completions, and OpenAI Responses gateways.",
   "license": "MIT",
   "packageManager": "pnpm@9.15.9",
   "type": "module",
@@ -13,7 +13,7 @@
     "build": "rspack build -c rspack.config.ts",
     "start": "node server/index.mjs",
     "test": "node --test server/index.test.mjs",
-    "check:server": "node --check server/index.mjs && node --check server/backup.mjs",
+    "check:server": "node --check server/index.mjs && node --check server/gatewayAdapters.mjs && node --check server/backup.mjs",
     "type": "tsc -p tsconfig.json",
     "lint": "oxlint src rspack.config.ts",
     "format": "oxfmt --write ."

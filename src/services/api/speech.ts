@@ -1,7 +1,7 @@
 import { ApiError, API_ORIGIN, request } from './client.js'
 
 /**
- * New API's OpenAI-compatible audio endpoints.
+ * The gateway's OpenAI-compatible audio endpoints.
  */
 const AUDIO_BASE_URL = `${API_ORIGIN}/v1/audio`
 

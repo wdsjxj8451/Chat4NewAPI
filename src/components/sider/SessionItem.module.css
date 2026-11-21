@@ -5,11 +5,14 @@
   box-sizing: border-box;
   height: 40px;
   padding: 9px 6px 9px 10px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 14px;
   line-height: 22px;
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
+  transition:
+    background-color var(--chat-feedback),
+    color var(--chat-feedback);
 
   &.active {
     background-color: var(--dsw-specific-sidebar-nav-item-active-accent);
@@ -30,6 +33,11 @@
   }
 }
 
+.item:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-text);
+  outline-offset: 1px;
+}
+
 .title {
   flex: 1;
   min-width: 0;
@@ -37,12 +45,23 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   line-height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .action {
   display: none;
   flex-shrink: 0;
   margin-left: 4px;
+}
+
+.item:focus-within .action {
+  display: flex;
 }
 
 .renameInput {

@@ -10,12 +10,12 @@ STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 backup() {
   mkdir -p backups
   "${COMPOSE[@]}" exec -T chat node server/backup.mjs
-  "${COMPOSE[@]}" stop chat new-api
-  trap '"${COMPOSE[@]}" start new-api chat >/dev/null 2>&1 || true' RETURN
-  tar -czf "backups/chat4newapi-${STAMP}.tar.gz" .env compose.yaml Caddyfile data/chat/.backup data/newapi
+  "${COMPOSE[@]}" stop chat
+  trap '"${COMPOSE[@]}" start chat >/dev/null 2>&1 || true' RETURN
+  tar -czf "backups/chat4newapi-${STAMP}.tar.gz" .env compose.yaml Caddyfile data/chat/.backup
   chmod 600 "backups/chat4newapi-${STAMP}.tar.gz"
   rm -rf -- data/chat/.backup
-  "${COMPOSE[@]}" start new-api chat
+  "${COMPOSE[@]}" start chat
   trap - RETURN
   find backups -maxdepth 1 -type f -name 'chat4newapi-*.tar.gz' -printf '%T@ %p\n' | sort -nr | tail -n +8 | cut -d' ' -f2- | xargs -r rm --
   echo "Backup written: backups/chat4newapi-${STAMP}.tar.gz"
@@ -58,11 +58,10 @@ case "$ACTION" in
     backup
     TEMP_DIR="$(mktemp -d)"
     tar -xzf "$ARCHIVE" -C "$TEMP_DIR"
-    "${COMPOSE[@]}" stop chat new-api
-    trap 'rm -rf -- "$TEMP_DIR"; "${COMPOSE[@]}" start new-api chat >/dev/null 2>&1 || true' EXIT
-    rm -rf -- data/chat data/newapi
-    mkdir -p data/chat data/newapi
-    cp -a "$TEMP_DIR/data/newapi/." data/newapi/
+    "${COMPOSE[@]}" stop chat
+    trap 'rm -rf -- "$TEMP_DIR"; "${COMPOSE[@]}" start chat >/dev/null 2>&1 || true' EXIT
+    rm -rf -- data/chat
+    mkdir -p data/chat
     cp -a "$TEMP_DIR/data/chat/.backup/chat.sqlite" data/chat/chat.sqlite
     cp -a "$TEMP_DIR/data/chat/.backup/files" data/chat/files
     cp -a "$TEMP_DIR/.env" .env
@@ -77,7 +76,7 @@ case "$ACTION" in
     read -r -p "Remove containers and configuration but keep data? [Y/n] " KEEP
     "${COMPOSE[@]}" down
     if [[ "${KEEP,,}" == "n" ]]; then
-      read -r -p "Type DELETE to remove all local chat and New API data: " CONFIRM
+      read -r -p "Type DELETE to remove local Chat4NewAPI data: " CONFIRM
       [[ "$CONFIRM" == "DELETE" ]] || exit 1
       rm -rf -- "$INSTALL_DIR/data"
     fi

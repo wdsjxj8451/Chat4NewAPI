@@ -5,6 +5,7 @@
  */
 
 export type ChatModel = string
+export type GatewayProtocol = 'anthropic-messages' | 'openai-chat-completions' | 'openai-responses'
 
 // ---------- 响应：内容块 ----------
 
@@ -237,7 +238,7 @@ export type MessageStreamEvent =
  * POST /anthropic/v1/files 的 purpose：PDF 与 Word、PPT 需要服务端做版面解析；
  * 纯文本、代码、表格与电子书不需要解析，用 user_data。
  */
-export type FilePurpose = 'rich_layout_recognition' | 'user_data'
+export type FilePurpose = 'rich_layout_recognition' | 'user_data' | 'vision'
 
 /** POST /anthropic/v1/files 的响应 */
 export type FileObject = {

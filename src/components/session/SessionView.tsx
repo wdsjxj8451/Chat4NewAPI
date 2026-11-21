@@ -21,14 +21,14 @@ export const SessionView = ({
   const isMobile = useIsMobile()
   const title = session.title || t('untitledChat')
   return (
-    <div className={styles.view}>
+    <div key={session.id} className={styles.view}>
       {isMobile ? (
         <MobileHeader title={title} />
       ) : (
         <div className={styles.header}>
-          <div className={clsx(styles.title, siderCollapsed && styles.withCollapsedSider)}>
+          <h1 className={clsx(styles.title, siderCollapsed && styles.withCollapsedSider)}>
             {title}
-          </div>
+          </h1>
         </div>
       )}
       <MessageList

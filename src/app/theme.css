@@ -6,6 +6,23 @@
 }
 
 body {
+  --chat-canvas: #faf9fc;
+  --chat-sidebar: color-mix(in srgb, var(--chat-custom-tint, #5d46a3) 8%, #fcfbfd);
+  --chat-surface: #fff;
+  --chat-ink: #262331;
+  --chat-muted: #625b70;
+  --chat-line: #ded8e7;
+  --chat-accent: var(--chat-custom-accent, #5d46a3);
+  --chat-accent-hover: color-mix(in srgb, var(--chat-accent) 82%, black);
+  --chat-accent-soft: color-mix(in srgb, var(--chat-custom-tint, #5d46a3) 13%, #fff);
+  --chat-hover: color-mix(in srgb, var(--chat-custom-tint, #5d46a3) 8%, #f5f3f7);
+  --chat-scrim: rgb(27 19 40 / 34%);
+  --chat-composer-shadow: 0 8px 28px rgb(47 33 72 / 7%);
+  --chat-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --chat-feedback: 150ms;
+  --chat-enter: 260ms;
+  --chat-reading-width: 748px;
+  --chat-display-font: Georgia, 'Noto Serif CJK SC', 'Songti SC', SimSun, serif;
   --ds-control-height-xl: 44px;
   --ds-control-height-l: 40px;
   --ds-control-height-m: 36px;
@@ -71,6 +88,18 @@ body {
 }
 
 body[data-ds-dark-theme] {
+  --chat-canvas: #19181e;
+  --chat-sidebar: color-mix(in srgb, var(--chat-custom-tint, #5d46a3) 4%, #121117);
+  --chat-surface: #23212a;
+  --chat-ink: #f0edf4;
+  --chat-muted: #b6adc2;
+  --chat-line: #40394b;
+  --chat-accent: var(--chat-custom-accent, #765cc7);
+  --chat-accent-hover: color-mix(in srgb, var(--chat-accent) 84%, black);
+  --chat-accent-soft: color-mix(in srgb, var(--chat-custom-tint, #8665bd) 20%, #1d1924);
+  --chat-hover: color-mix(in srgb, var(--chat-custom-tint, #5d46a3) 11%, #25232b);
+  --chat-scrim: rgb(0 0 0 / 55%);
+  --chat-composer-shadow: 0 8px 28px rgb(0 0 0 / 21%);
   --dsw-static-amber-100: rgb(254, 245, 231);
   --dsw-static-amber-400: rgb(247, 173, 49);
   --dsw-static-amber-500: rgb(245, 158, 11);
@@ -250,4 +279,40 @@ body {
   --dsw-font-s-strong-14: 500 14px/22px var(--dsw-font-family);
 
   --dsw-font-xs-13: 13px/20px var(--dsw-font-family);
+}
+
+body,
+body[data-ds-dark-theme] {
+  --dsw-alias-bg-base: var(--chat-canvas);
+  --dsw-alias-bg-layer-2: var(--chat-surface);
+  --dsw-alias-bg-layer-3: var(--chat-surface);
+  --dsw-alias-border-l1: var(--chat-line);
+  --dsw-alias-border-l2-darkmode-thin: var(--chat-line);
+  --dsw-alias-border-l2: var(--chat-line);
+  --dsw-alias-brand-primary: var(--chat-accent);
+  --dsw-alias-brand-primary-invert: var(--chat-ink);
+  --dsw-alias-button-elevated-fill: var(--chat-surface);
+  --dsw-alias-button-primary-fill: var(--chat-accent);
+  --dsw-alias-brand-text: var(--chat-accent);
+  --dsw-alias-button-primary-hover: var(--chat-accent-hover);
+  --dsw-alias-button-ghost-active-border: var(--chat-accent);
+  --dsw-alias-button-ghost-active-fill: var(--chat-accent-soft);
+  --dsw-alias-button-ghost-active-hover: var(--chat-hover);
+  --dsw-alias-interactive-bg-hover: var(--chat-hover);
+  --dsw-alias-label-primary: var(--chat-ink);
+  --dsw-alias-label-secondary: var(--chat-muted);
+  --dsw-alias-label-tertiary: var(--chat-muted);
+  --dsw-specific-bubble: var(--chat-accent-soft);
+  --dsw-specific-input-major: var(--chat-surface);
+  --dsw-specific-sidebar-fill: var(--chat-sidebar);
+  --dsw-specific-sidebar-nav-item-active-accent: var(--chat-accent-soft);
+  --dsw-specific-sidebar-nav-item-hover: var(--chat-hover);
+  --dsw-alias-markdown-code-block-banner: var(--chat-sidebar);
+  --dsw-alias-markdown-code-block: var(--chat-sidebar);
+  --dsw-alias-markdown-inline-code: var(--chat-hover);
+}
+
+body[data-ds-dark-theme] {
+  --dsw-alias-brand-text: color-mix(in srgb, var(--chat-custom-tint, #8054ff) 34%, white);
+  --dsw-alias-brand-primary: var(--dsw-alias-brand-text);
 }

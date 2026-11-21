@@ -2,81 +2,72 @@
 
 # Chat4NewAPI
 
-**基于 New API 的私有化、自托管 AI 聊天工作区**
+**为你已部署的模型网关打造的自托管 AI 聊天工作区**
 
-一个网页聊天界面，连接你已在 New API 配置的模型服务。
-密钥留在服务器，对话保存在 VPS，只邀请你信任的用户。
+一个私有聊天站，支持 Anthropic Messages、OpenAI Chat Completions 与 OpenAI Responses。
 
-[English](README.md) · [项目特色](#项目特色) · [系统架构](#系统架构) · [一键部署](#vps-一键部署)
+[![GitHub 星标](https://img.shields.io/github/stars/wdsjxj8451/Chat4NewAPI?style=social)](https://github.com/wdsjxj8451/Chat4NewAPI/stargazers)
+[![软件包版本](https://img.shields.io/github/package-json/v/wdsjxj8451/Chat4NewAPI?filename=package.json)](package.json)
+[![最新版本](https://img.shields.io/github/v/release/wdsjxj8451/Chat4NewAPI?label=版本)](https://github.com/wdsjxj8451/Chat4NewAPI/releases)
+[![许可证](https://img.shields.io/github/license/wdsjxj8451/Chat4NewAPI)](LICENSE)
+[![构建状态](https://img.shields.io/github/actions/workflow/status/wdsjxj8451/Chat4NewAPI/publish.yml?branch=main&label=构建)](https://github.com/wdsjxj8451/Chat4NewAPI/actions/workflows/publish.yml)
+
+[English](README.md) · [快速部署](#快速部署) · [协议兼容](#协议兼容) · [运维](#运维) · [开发与测试](#开发与测试) · [GitHub 发布](#github-发布与镜像)
 
 </div>
 
 ---
 
-## 项目简介
+## 首次启动体验
 
-Chat4NewAPI 是一个以 [New API](https://github.com/QuantumNous/new-api) 为模型网关的自托管、多用户网页聊天应用。它以 [DeepSeek 开源 chat-demo](https://github.com/deepseek-ai/chat-demo) 的体验为基础，增加服务端账号、持久化会话、模型切换和管理员控制台。
+![Chat4NewAPI 首次管理员初始化页面](docs/images/first-run-setup.png)
 
-在 New API 中配置一次上游渠道，受邀用户即可使用网关开放的模型。浏览器不会获得供应商密钥或 New API 令牌。
+初始化后，管理员可在控制台选择网关协议、管理模型能力，并设置全站提示词和站点外观。
 
-## 项目特色
+Chat4NewAPI 基于开源 [DeepSeek chat-demo](https://github.com/deepseek-ai/chat-demo) 构建，增加了私有账号、持久化会话、模型选择和管理控制台。API 密钥只保存在服务端；对话和上传文件保存在你自己的服务器。
 
-| 方向 | Chat4NewAPI 提供的能力 |
-| --- | --- |
-| 多模型聊天 | 切换 New API 暴露的模型；所有生成请求通过同源、需登录的服务端代理流式转发。 |
-| 完整聊天工作区 | 会话历史、分支、重命名/删除、编辑/重新生成，以及 Markdown、代码高亮、公式和 Mermaid。 |
-| 模型能力适配 | 按模型启用深度思考、搜索、文件、视觉和语音；未启用或不支持的控件不显示。 |
-| 私有账号体系 | 首次创建站点管理员、邀请制创建账号、停用/恢复账号、用户间会话隔离。 |
-| VPS 本地数据 | SQLite 保存账号、聊天、用量与配置；附件原件保存在 VPS 的持久化目录。 |
-| 部署运维 | Docker Compose、Caddy 自动 HTTPS、健康检查、备份/恢复、版本镜像和交互式安装器。 |
+## 协议兼容
 
-DeepSeek 搜索/阅读工具以及文件、语音接口是否可用，取决于对应的 New API 通道和上游。请对每条模型路由实际验证后，再启用相应能力。
+在「管理控制台 → 模型服务」中选择聚合平台提供的协议。服务端将响应流转换为聊天前端统一使用的事件格式；更换网关时，用户仍使用同一套对话界面。
 
-## 系统架构
+| 协议 | 上游接口 | 说明 |
+| --- | --- | --- |
+| Anthropic Messages | `/v1/messages` | 原生转发 Messages、Files、思考和兼容工具。 |
+| OpenAI Chat Completions | `/v1/chat/completions` | 支持流式文本及兼容的推理/语音能力。此协议暂不适配文件、图片和联网搜索，因此会隐藏这些控件。 |
+| OpenAI Responses | `/v1/responses` | 支持流式文本/推理、Responses 文件引用，以及服务端支持时的内置联网搜索。 |
 
-```mermaid
-flowchart LR
-  Browser[受邀用户] -->|HTTPS，会话 Cookie| Chat[VPS 上的 Chat4NewAPI]
-  Admin[管理员] -->|HTTPS| Console[New API 管理台]
-  Chat -->|SQLite 和本地附件| Disk[(VPS 持久化存储)]
-  Chat -->|Docker 内网，服务端密钥| Gateway[New API]
-  Gateway --> ProviderA[DeepSeek]
-  Gateway --> ProviderB[其他模型供应商]
-  DNS[Cloudflare DNS] -. 域名解析 .-> Chat
-  DNS -. 域名解析 .-> Console
-  Caddy[Caddy HTTPS 反向代理] --> Chat
-  Caddy --> Console
-```
+所有协议均使用通用的 `/v1/models` 接口发现模型。New API、Sub2API 及其他网关，只要提供所选兼容协议即可接入。接口可用性、文件处理、工具、推理和语音能力仍由聚合平台决定；管理台会隐藏所选协议已知不支持的能力控件。
 
-Cloudflare 用于域名 DNS，Caddy 自动申请和续期 HTTPS 证书。Chat4NewAPI 与 New API 走 Docker Compose 私有网络；模型供应商渠道在 New API 管理控制台配置。
+**当前兼容边界：** Chat Completions 支持流式文本和推理增量；文件/图片输入及搜索控件目前通过 Messages 或 Responses 协议提供。Responses 适配文件引用和联网搜索；对应网关需要兼容 `/v1/files` 与 `/v1/responses`。
 
-## VPS 一键部署
+## 功能
 
-### 环境准备
+- 首次管理员初始化、邀请制账号、访问控制和用户间会话隔离。
+- 持久化对话、分支、重命名/删除、编辑/重新生成，以及 Markdown、代码高亮、KaTeX 和 Mermaid。
+- 按模型启用推理、搜索、附件、视觉和语音等能力。
+- 管理员可自定义全站系统提示词、站点名称、浏览器图标和强调色。
+- SQLite 保存业务数据，附件存储在本地，网关密钥加密保存，支持备份/恢复。
+- Docker Compose、Caddy 自动 HTTPS、健康检查、GHCR 镜像和一键 VPS 安装脚本。
 
-- 一台公网可访问 80 和 443 端口的 Ubuntu/Debian VPS。
-- 两个解析到 VPS 的域名，例如 `chat.example.com` 与 `newapi.example.com`。
-- 一个公开 GitHub 仓库；首次发布镜像后将 GHCR Package 设置为公开。
+## 快速部署
 
-先在 Cloudflare 创建 DNS 记录，然后在 VPS 上以 root 执行：
+需要 Ubuntu/Debian VPS、Docker Compose、一个 DNS 域名，并将 GHCR 镜像包设为公开。
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/OWNER/Chat4NewAPI/main/deploy/install.sh | sudo bash -s -- OWNER/Chat4NewAPI
+curl -fsSL https://raw.githubusercontent.com/wdsjxj8451/Chat4NewAPI/main/deploy/install.sh | sudo bash -s -- wdsjxj8451/Chat4NewAPI
 ```
 
-安装器检查系统，只在 VPS 缺少 Docker 时安装 Docker Engine；随后询问两个域名、生成独立密钥、下载 Compose 配置并启动 Chat4NewAPI、New API 和 Caddy。安装结束会显示创建 Chat4NewAPI 初始管理员的一次性令牌，请在完成初始化前妥善留存。
+安装器会检查常见 New API/Sub2API 容器名与端口。发现服务后会建议可达的 API 地址；未发现时，可选择把官方 New API 镜像安装到独立 Compose 项目。Chat4NewAPI 本身不捆绑、不依赖该网关。
 
-### 首次配置
+1. 将聊天域名解析到 VPS，并开放 TCP 80、443 端口。
+2. 运行安装器，留存输出的一次性管理员初始化令牌。
+3. 打开聊天站创建管理员，再进入 `/admin`。
+4. 填写网关名称、协议、基础地址和 API 密钥，保存并测试连接。
+5. 验证模型能力，调整系统提示词和外观，再邀请用户。
 
-1. 打开聊天域名，用安装器输出的一次性令牌创建 Chat4NewAPI 管理员。
-2. 打开 New API 域名，完成独立的 New API 管理员初始化。
-3. 在 New API 添加供应商渠道并启用模型。
-4. 在 Chat4NewAPI 的 `/admin` 页面填入 New API 令牌和内网地址 `http://new-api:3000`。
-5. 检查模型列表，只启用实际验证过的模型能力，然后创建受邀用户。
+若安装器独立部署了 New API，其管理面板只绑定 VPS 的 `127.0.0.1:3300`，请通过 SSH 隧道访问，不会暴露到公网。
 
-建议使用 Cloudflare Access 限制 New API 管理域名。Cloudflare 代理可选；若启用，请确保 VPS 可接收证书验证所需流量。
-
-## 运维命令
+## 运维
 
 ```sh
 chat4newapi status
@@ -86,11 +77,11 @@ chat4newapi update v1.0.0
 chat4newapi restore
 ```
 
-数据位于 `/opt/chat4newapi/data`，备份位于 `/opt/chat4newapi/backups`。备份包含本地数据库、附件、New API 数据、部署配置和加密密钥。请另存一份到 VPS 以外。恢复和删除数据需要明确确认；卸载默认保留数据。
+Chat4NewAPI 数据位于 `/opt/chat4newapi/data`，备份位于 `/opt/chat4newapi/backups`。备份包含本站数据库、附件、部署文件和加密密钥，但不包含独立网关的数据。请将网关数据和 `/opt/chat4newapi/.env` 另行备份到服务器之外。
 
-请保护 `/opt/chat4newapi/.env`。它含有 New API 令牌的加密密钥及部署密钥；若丢失，将无法解密已保存的令牌。
+如需固定安装版本，可在安装命令中传入版本标签，例如 `v1.2.0`。`chat4newapi update v1.2.0` 会升级到对应镜像，并从对应 Git 标签更新部署文件。不带版本的 `chat4newapi update` 跟踪 `main` 与 `latest`。
 
-## 本地开发与测试
+## 开发与测试
 
 需要 Node.js 22.12+ 和 pnpm 9。
 
@@ -99,39 +90,20 @@ pnpm install
 APP_ENCRYPTION_KEY="$(openssl rand -hex 32)" pnpm dev
 ```
 
-打开 `http://localhost:8090`。前端会把 `/api` 转发给 3100 端口的后端。首次创建管理员后，在 `/admin` 配置可访问的 New API 地址和令牌。
+打开 `http://localhost:8090`。配置聊天服务端可访问的网关地址；浏览器不会直接连接或持有供应商密钥。
 
 ```sh
+pnpm test
 pnpm type
 pnpm lint
 pnpm check:server
-pnpm test
 pnpm build
 ```
 
-### 在 WSL 运行完整服务
+## GitHub 发布与镜像
 
-Debian/Ubuntu WSL 需启用 systemd；Docker Engine 与 Compose 安装在 Linux 发行版中，不安装 Windows Docker Desktop：
+推送 `vX.Y.Z` 版本标签后，GitHub Actions 运行检查，并发布 `linux/amd64` 和 `linux/arm64` 镜像至 `ghcr.io/wdsjxj8451/chat4newapi`。一键安装脚本及 Compose/Caddy 部署文件均位于 [`deploy/`](deploy/)。请将 GHCR 镜像包设为公开。软件包版本徽章跟随 `package.json`；创建 GitHub Release 后，最新发行版徽章才会显示版本。
 
-```sh
-sudo apt-get update
-sudo apt-get install -y docker.io docker-compose
-sudo systemctl enable --now docker
-```
+## 许可证
 
-从 `deploy/.env.example` 创建 `deploy/.env`，两个域名设为 `localhost`，并填入四个随机十六进制密钥。随后构建聊天容器并启动聊天站和 New API：
-
-```sh
-docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml build chat
-docker compose --env-file deploy/.env -f deploy/compose.yaml -f deploy/compose.wsl-test.yaml up -d chat new-api
-```
-
-聊天站地址为 `http://localhost:8090`（也可在 Windows 使用 WSL IP），New API 管理台地址为 `http://localhost:3001`。WSL 覆盖将 New API 端口限制在本机回环地址，不启动 Caddy；聊天预览使用 WSL 网卡的 8090 端口。
-
-## GitHub 镜像发布
-
-推送 `v1.0.0` 形式的版本标签后，GitHub Actions 会先运行检查，再构建并发布 `linux/amd64`、`linux/arm64` 镜像到 `ghcr.io/OWNER/Chat4NewAPI`。请将镜像包设置为公开。安装和升级使用对应 Git ref 中的部署脚本。
-
-## 许可
-
-聊天界面基于 DeepSeek 的 MIT 许可 `chat-demo` 改造。再分发时请保留 [LICENSE](LICENSE) 和第三方声明。New API、模型供应商 API 与模型仍遵循各自许可证及服务条款。
+本项目采用 MIT 许可证。聊天界面基于 DeepSeek 的 MIT 许可 `chat-demo` 改造；再分发时请保留 [LICENSE](LICENSE) 和第三方声明。所连接的网关、模型供应商 API 和模型遵循其各自许可证与服务条款。

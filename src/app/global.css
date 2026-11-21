@@ -1,15 +1,3 @@
-:root {
-  --message-list-max-width: 840px;
-  --message-list-padding-horizontal: 44px;
-}
-
-@media (max-width: 1023px) {
-  :root {
-    --message-list-max-width: 712px;
-    --message-list-padding-horizontal: 36px;
-  }
-}
-
 body {
   overflow: hidden;
   margin: 0;
@@ -37,6 +25,16 @@ body[data-ds-dark-theme] {
   --scroll-color-hover: rgba(255, 255, 255, 0.24);
 }
 
+::selection {
+  color: var(--chat-ink);
+  background: color-mix(in srgb, var(--chat-accent) 25%, var(--chat-surface));
+}
+
+:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-text);
+  outline-offset: 3px;
+}
+
 body.change-theme *,
 body.change-theme *::before,
 body.change-theme *::after {
@@ -50,5 +48,14 @@ body.change-theme *::after {
     height: 100%;
     overflow: hidden;
     overscroll-behavior-y: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    --chat-feedback: 0ms;
+    --chat-enter: 0ms;
+    --ds-transition-duration: 0s;
+    --ds-transition-duration-slow: 0s;
   }
 }

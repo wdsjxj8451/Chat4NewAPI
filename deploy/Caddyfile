@@ -1,7 +1,3 @@
 {$CHAT_DOMAIN} {
 	reverse_proxy chat:3100
 }
-
-{$NEWAPI_DOMAIN} {
-	reverse_proxy new-api:3000
-}

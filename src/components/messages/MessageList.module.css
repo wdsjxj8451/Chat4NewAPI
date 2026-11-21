@@ -1,6 +1,7 @@
 .container {
   flex: 1;
   min-height: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -30,8 +31,13 @@
 }
 
 .column {
-  width: calc(var(--message-list-max-width) - 2 * var(--message-list-padding-horizontal));
-  max-width: calc(100% - 40px);
+  width: min(calc(100% - 40px), var(--chat-reading-width));
   margin: 0 auto;
   padding-bottom: 24px;
+}
+
+@media (max-width: 767px) {
+  .column {
+    width: calc(100% - 28px);
+  }
 }

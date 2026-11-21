@@ -1019,7 +1019,8 @@ const streamReply = async (sessionId: string, initial: AssistantMessage, request
               ...(deepseek && titleRequests.has(controller) ? { title: { enabled: true } } : {}),
             }
           })(),
-          controller.signal
+          controller.signal,
+          useModelCatalog.getState().protocol
         )
         const blockIndexes = new Map<number, number>()
         for await (const event of events) {
