@@ -2,9 +2,9 @@
 set -Eeuo pipefail
 
 REPO="${1:-}"
-VERSION="${2:-latest}"
-SOURCE_REF="$VERSION"
-if [[ "$VERSION" == "latest" ]]; then SOURCE_REF="main"; fi
+IMAGE_VERSION="${2:-latest}"
+SOURCE_REF="$IMAGE_VERSION"
+if [[ "$IMAGE_VERSION" == "latest" ]]; then SOURCE_REF="main"; fi
 INSTALL_DIR="/opt/chat4newapi"
 
 if [[ "$(id -u)" -ne 0 ]]; then
@@ -66,7 +66,7 @@ while IFS=$'\t' read -r container image; do
       [[ -n "$mapping" ]] || continue
       internal_port="${mapping%%/*}"
       host_port="${mapping##*:}"
-      status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 2 "http://127.0.0.1:${host_port}/v1/models" || true)"
+      status="$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 "http://127.0.0.1:${host_port}/v1/models" 2>/dev/null || true)"
       if [[ "$status" =~ ^(200|401|403)$ ]]; then
         if [[ "$mapping" == *"127.0.0.1:"* ]]; then
           docker network connect "$container" chat4newapi-models >/dev/null 2>&1 || true
@@ -83,7 +83,7 @@ done < <(docker ps --format '{{.Names}}\t{{.Image}}')
 
 if [[ -z "$DEFAULT_MODEL_API_URL" ]]; then
   for port in 3000 3001 8080 8000; do
-    status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 2 "http://127.0.0.1:${port}/v1/models" || true)"
+    status="$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 "http://127.0.0.1:${port}/v1/models" 2>/dev/null || true)"
     if [[ "$status" =~ ^(200|401|403)$ ]]; then
       DEFAULT_MODEL_API_URL="http://host.docker.internal:${port}"
       echo "Detected an API-compatible model service on port ${port}."
@@ -140,7 +140,7 @@ curl -fsSL "$RAW/Caddyfile" -o "$INSTALL_DIR/Caddyfile"
 curl -fsSL "$RAW/manage.sh" -o "$INSTALL_DIR/manage.sh"
 chmod 700 "$INSTALL_DIR/manage.sh"
 
-IMAGE="ghcr.io/$(printf '%s' "$REPO" | tr '[:upper:]' '[:lower:]'):${VERSION}"
+IMAGE="ghcr.io/$(printf '%s' "$REPO" | tr '[:upper:]' '[:lower:]'):${IMAGE_VERSION}"
 APP_KEY="$(openssl rand -hex 32)"
 SETUP_TOKEN="$(openssl rand -hex 32)"
 umask 077
